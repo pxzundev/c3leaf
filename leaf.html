@@ -1,71 +1,526 @@
-
-<!DOCTYPE html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html>
 <head>
-	
-	<title>Quick Start - Leaflet</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+	<title>AOI Web</title>
 
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	
-	<link rel="shortcut icon" type="image/x-icon" href="docs/images/favicon.ico" />
+	<meta http-Equiv="Cache-Control" Content="no-cache" />
+    <meta http-Equiv="Pragma" Content="no-cache" />
+    <meta http-Equiv="Expires" Content="0" />
+	
+	<!--<link rel="shortcut icon" type="image/x-icon" href="docs/images/favicon.ico" />-->
 
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.1/dist/leaflet.css"
-  integrity="sha512-Rksm5RenBEKSKFjgI3a41vrjkw4EVPlJ3+OiI65vTjIdo9brlAacEuKOiQ5OFh7cOI1bkDwLqdLw3Zg0cRJAAQ=="
-  crossorigin=""/>
-<script src="https://unpkg.com/leaflet@1.3.1/dist/leaflet.js"
-  integrity="sha512-/Nsx9X4HebavoBvEBuyp3I7od5tA0UzAxs+j83KgC8PU0kgB4XiK4Lfe4y4cgBtaRJQEIFCW+oC506aPT2L1zw=="
-  crossorigin=""></script>
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.1/dist/leaflet.css"
+	integrity="sha512-Rksm5RenBEKSKFjgI3a41vrjkw4EVPlJ3+OiI65vTjIdo9brlAacEuKOiQ5OFh7cOI1bkDwLqdLw3Zg0cRJAAQ=="
+	crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.3.1/dist/leaflet.js"
+	integrity="sha512-/Nsx9X4HebavoBvEBuyp3I7od5tA0UzAxs+j83KgC8PU0kgB4XiK4Lfe4y4cgBtaRJQEIFCW+oC506aPT2L1zw=="
+	crossorigin=""></script>
 
+	<!-- <script src="rzgeolib.js"></script>
+	<script src="rzgeojson-utils.js"></script> -->
+	<script src="https://unpkg.com/leaflet-pip@latest/leaflet-pip.js"></script>
+	
+
+	<link rel="stylesheet" href="basic.ruler-src.css" />
+	<script type="text/javascript" src="basic.ruler-src.js"></script>
+	<script src="bing.js"></script>   
+	<script charset="UTF-8" type="text/javascript" src="https://ecn.dev.virtualearth.net/mapcontrol/mapcontrol.ashx?v=7.0&s=1"></script>
+ 
+
+
+   <style>
+   html, body, #mapid {
+      height:100%;
+      width:100%;
+      padding:0px;
+      margin:0px;
+   } 
+   </style>
 	
 </head>
 <body>
-
-
-
-<div id="mapid" style="width: 100%; height: 100vh; "></div>
+<!--<button onclick="addOverlays()">Click me</button>
+<INPUT TYPE="button" onClick="history.go(0)" VALUE="Refresh">
+<button onclick="clearAllLayers()">Click me</button>     
+<INPUT TYPE="button" onClick="drawCircle(14.5,120.6,20000,'Outer')" VALUE="add obst">-->
+<div id="mapid"></div>
 <script>
+	// var Auhi = window.parent.document.getElementById('auhi').value;
 
-	var mymap = L.map('mapid').setView([51.505, -0.09], 13);
+	var runway = new L.LayerGroup(),
+		runwaystrip = new L.LayerGroup(),
+		transitionalsurface = new L.LayerGroup(),
+		innerhorizontal = new L.LayerGroup(),
+		conical = new L.LayerGroup(),
+		outerhorizontal = new L.LayerGroup(),
+		innerapproach = new L.LayerGroup(),
+		approach = new L.LayerGroup(),
+		innertransitional = new L.LayerGroup(),
+		balkedlanding = new L.LayerGroup(),
+		takeoff = new L.LayerGroup();
 
-	L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {
-		maxZoom: 18,
-		attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
-			'<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
-			'Imagery © <a href="http://mapbox.com">Mapbox</a>',
-		id: 'mapbox.streets'
-	}).addTo(mymap);
+	var mbAttr = '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, Tiles courtesy of <a href="http://hot.openstreetmap.org/" target="_blank">Humanitarian OpenStreetMap Team</a>',
+		mbUrl = 'http://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png';
+		
+	var OSM   = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'});
+	
+	var opentopo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+	maxZoom: 17,
+	attribution: 'Map data: &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
+	});
 
-	L.marker([51.5, -0.09]).addTo(mymap)
-		.bindPopup("<b>Hello world!</b><br />I am a popup.").openPopup();
+	
+	var Auhi = 'AuhiCJHlGzhg93IqUH_oCpl_-ZUrIE6SPftlyGYUvr9Amx5nzA-WqGcPquyFZl4L';
+	var bingRoad = new L.BingLayer(Auhi, {type: 'Road'});
+	var bingAerial = new L.BingLayer(Auhi, {type: 'Aerial'});
+	var bingAerialWithLabels = new L.BingLayer(Auhi, {type: 'AerialWithLabels'});
+		
+	var map = L.map('mapid', {
+		center: [14.503125757799154,122.0594220211],
+		zoom: 1,
+		doubleClickZoom: false,
+		minZoom: 3
+	});
+	
+	//MAP MEASURE
+	map.addControl(new L.Control.LinearCore({
+	  unitSystem: 'metric',
+      color: '#000000',
+      type: 'line',
+	  features:['ruler']
+    }));
 
-	L.circle([51.508, -0.11], 500, {
-		color: 'red',
-		fillColor: '#f03',
-		fillOpacity: 0.5
-	}).addTo(mymap).bindPopup("I am a circle.");
 
-	L.polygon([
-		[51.509, -0.08],
-		[51.503, -0.06],
-		[51.51, -0.047]
-	]).addTo(mymap).bindPopup("I am a polygon.");
-
+	map.addLayer(OSM);
+	map.addControl(new L.Control.Layers({'OSM':OSM, 'OSM Topo':opentopo,'Road':bingRoad,'Aerial':bingAerial,'Hybrid':bingAerialWithLabels}));				   
+				   
+	function changeCursorToCrosshair(){
+		document.getElementById('mapid').style.cursor = 'crosshair'
+	}
+	
+	function changeCursorToPointer(){
+		document.getElementById('mapid').style.cursor = 'pointer'
+	}
+	
+	function changeCursorToMove(){
+		document.getElementById('mapid').style.cursor = 'move'
+	}
+	
+	function resetCursor(){
+		document.getElementById('mapid').style.cursor = ''
+	}
+	
+	function mapCenterRunway(latC, lonC){
+		//map.panTo(new L.LatLng(latC, lonC));
+		map.setView([latC, lonC], 11);
+		//map.setZoom(11);
+		//map.flyTo([latC, lonC]);
+		
+	}
+	
+	function mapZoom(latC, lonC, zoomlevel){
+		//map.panTo(new L.LatLng(latC, lonC));
+		map.setView(new L.LatLng(latC, lonC), zoomlevel);
+	}	
 
 	var popup = L.popup();
+	var mouseLatLon = "mouseLatLon";
 
 	function onMapClick(e) {
 		popup
 			.setLatLng(e.latlng)
-			.setContent("You clicked the map at " + e.latlng.toString())
-			.openOn(mymap);
+			.setContent("You clicked the map at " + e.latlng.wrap().toString())
+			.openOn(map);
+			mouseLatLon = e.latlng.wrap().toString();
+			console.log(mouseLatLon);
+			window.parent.document.getElementById("mapclickresult").value = mouseLatLon;
+			
+			
+			//return e.latlng.toString();
+	}
+	
+	
+	
+	
+	
+	//map.on('click', onMapClick);
+	//map.on('click', addMultipleObstacles);
+	//map.on('contextmenu',addMultipleObstacles);
+	
+	//map.on('movestart', changeCursorToMove);
+	map.on('contextmenu',addObstacles);
+	map.on('click', pickCoords);
+	
+	
+	L.control.scale().addTo(map);
+	
+	// MARKER BY PX
+	function onClick(e) {
+	//var obstacleMarker;
+	//var markers = new L.FeatureGroup();
+		//alert(this.getLatLng());
+		
+		//map.removeLayer(this);
+		
+		markers.clearLayers(markers);
+		//obstacleMarker = new L.marker({opacity: 1, icon: obstIcon, draggable: false}).bindTooltip(str).openTooltip().on('contextmenu', onClick);		  
+		//markers.addLayer(obstacleMarker);
+		//map.addLayer(markers);
+
+	}
+	
+	//var obstacleMarker;
+	//var markers = new L.FeatureGroup();
+	
+	
+	function pickCoords(e){
+		//markers.dragging.disable();
+		window.parent.document.getElementById("mapLat").value = e.latlng.wrap().lat;
+		window.parent.document.getElementById("mapLon").value = e.latlng.wrap().lng;
+		
+	if (window.parent.document.getElementById("mapClickObstToggle").value === "1")
+	{
+		window.parent.document.getElementById("mapLat").click();
+	}
+		
+		
+			
+	}
+	var obstacleMarker;
+	var markers = new L.FeatureGroup();
+	var markerTyped=null;
+	var markerClicked=null;
+	function addObstacles(e){
+
+		var obstIcon = L.icon({
+			iconUrl: 'obstacle.png',
+			iconSize: [25, 25],
+			iconAnchor: [12.5, 22],
+			popupAnchor: [0,-25]
+		});
+		
+		var ns;
+		var ew;
+		if (parseFloat(e.latlng.wrap().lat) < 0){
+			ns = 'S';
+		} else {
+			ns = 'N';
+		}
+		
+		if (parseFloat(e.latlng.wrap().lng) < 0){
+			ew = 'W';
+		} else {
+			ew = 'E';
+		}
+		var obstLat = Math.round(parseFloat(e.latlng.wrap().lat)*10000)/10000;
+		var obstLon = Math.abs(Math.round(parseFloat(e.latlng.wrap().lng)*10000)/10000);
+
+		var str = 'Obstacle Coordinates: <strong>' + ns + obstLat.toString() + " " + ew + obstLon.toString()//; + '</strong><br/><em>Right-click to delete</em>';
+		
+		if (window.parent.document.getElementById("mapClickObstToggle").value === "2")
+		{
+			if (markerTyped !== null) {
+				map.removeLayer(markerTyped);
+			}
+			markerTyped = L.marker(e.latlng, {icon: obstIcon, draggable: false});
+			map.addLayer(markerTyped);
+
+			if (window.parent.document.getElementById("mapClickObstToggle").value === "2"){
+				window.parent.document.getElementById("mapLat").value = e.latlng.wrap().lat;
+				window.parent.document.getElementById("mapLon").value = e.latlng.wrap().lng;
+				window.parent.document.getElementById("mapLat").click();
+				return e.latlng;
+			}
+		}
+	}
+	
+	function addObstaclesTyped(lat1,lon1){
+		//map.removeLayer(markers);
+		map.setView([lat1, lon1], 11);
+		var obstIcon = L.icon({
+			iconUrl: 'obstacle.png',
+			iconSize: [25, 25],
+			iconAnchor: [12.5, 22],
+			popupAnchor: [0,-25]
+		});
+
+		var newLatLng = new L.LatLng(lat1, lon1);
+		
+		if (markerTyped !== null) {
+			map.removeLayer(markerTyped);
+		}
+		markerTyped = L.marker([lat1,lon1], {icon: obstIcon, draggable: false});
+		map.addLayer(markerTyped);
+	}
+	
+	function viewObstacle(lat1,lon1,ObstID,Obstelev,Airport){
+		//map.removeLayer(markers);
+		map.setView([lat1, lon1], 11);
+		var obstIcon = L.icon({
+			iconUrl: 'obstacle.png',
+			iconSize: [25, 25],
+			iconAnchor: [12.5, 22],
+			popupAnchor: [0,-25]
+		});
+
+		var newLatLng = new L.LatLng(lat1, lon1);
+		
+		if (markerTyped !== null) {
+			map.removeLayer(markerTyped);
+		}
+		markerTyped = L.marker([lat1,lon1], {icon: obstIcon, draggable: false}).bindPopup("<strong>" + ObstID + "</strong><br/>Elev: " + Obstelev.toString() + " m. <br/>Airport: " + Airport).openPopup();
+		map.addLayer(markerTyped);
+	}
+	
+	var str2;
+	
+	function addMultipleObstacles(e){
+		
+		
+		var ns;
+		var ew;
+		if (parseFloat(e.latlng.wrap().lat) < 0){
+			ns = 'S';
+		} else {
+			ns = 'N';
+		}
+		
+		if (parseFloat(e.latlng.wrap().lng) < 0){
+			ew = 'W';
+		} else {
+			ew = 'E';
+		}
+		var obstLat = Math.round(parseFloat(e.latlng.wrap().lat)*10000)/10000;
+		var obstLon = Math.round(parseFloat(e.latlng.wrap().lng)*10000)/10000;
+		
+		var obstLatDMS = geolib.decimal2sexagesimal(parseFloat(e.latlng.wrap().lat)); 
+		var obstLonDMS = geolib.decimal2sexagesimal(parseFloat(e.latlng.wrap().lng));
+
+		
+		var str = ns + obstLatDMS.toString() + "  " + ew + obstLonDMS.toString();
+		
+		window.parent.document.getElementById("mapclickresult").value = str;
+
+		var obstIcon = L.icon({
+			iconUrl: 'obstacle.png',
+			iconSize: [25, 25],
+			iconAnchor: [12.5, 22],
+			popupAnchor: [0,-25]
+		});
+		
+		var ns;
+		var ew;
+		if (parseFloat(e.latlng.wrap().lat) < 0){
+			ns = 'S';
+		} else {
+			ns = 'N';
+		}
+		
+		if (parseFloat(e.latlng.wrap().lng) < 0){
+			ew = 'W';
+		} else {
+			ew = 'E';
+		}
+
+		window.parent.document.getElementById("mapclickLat").value = obstLat;
+		window.parent.document.getElementById("mapclickLon").value = obstLon;		
+					
+		var latD, latM, latS, lonD, lonM, lonS;
+		latD = Math.floor(obstLat);
+		latM = Math.floor((obstLat - latD)*60);
+		latS = Math.round(((((obstLat - latD)*60) - latM)*60)*10000)/10000;
+		lonD = Math.floor(Math.abs(obstLon));
+		lonM = Math.floor((Math.abs(obstLon) - lonD)*60);
+		lonS = Math.round(((((Math.abs(obstLon) - lonD)*60) - lonM)*60)*10000)/10000;
+		
+		//window.parent.document.getElementById("txtObstLatD").value = latD;
+		//window.parent.document.getElementById("txtObstLatM").value = latM;
+		//window.parent.document.getElementById("txtObstLatS").value = latS;
+		
+		window.parent.document.getElementById("txtObstElev").focus();
+		
+		//str2 = 'Obstacle Coordinates: <strong>' + ns + obstLat.toString() + " " + ew + Math.abs(obstLon).toString() + '</strong><br/>' +
+		//	'<p><em>Right-click to remove this obstacle from map.</em></p>';
+		str2 = 'Obstacle Coordinates:<br/> <strong>' + ns + latD.toString() + "° " + latM.toString() + "' " + latS.toString() + "\" " + 
+				ew + lonD.toString() + "° " + lonM.toString() + "' " + lonS.toString() + "\" " + '</strong><br/>' +
+			'<p><em>Right-click to remove this obstacle from map.</em></p>';
+		
+		obstacleMarker = L.marker(e.latlng, {opacity: 1, icon: obstIcon, draggable: false}).bindPopup(str2).openPopup().on('contextmenu', onClick);
+		//obstacleMarker.addTo(map);
+		
+		markers.addLayer(obstacleMarker);
+		map.addLayer(markers);
+		obstacleMarker.openPopup();		
+		//console.log(e.latlng);
+		obstacleMarker.id='obst';
+		
+		
+		
+		return e.latlng;
+	}	
+	
+	function removeMarkers(){
+		//map.removeLayer(markers);
+		if (markerTyped !== null) {
+			map.removeLayer(markerTyped);
+		}
 	}
 
-	mymap.on('click', onMapClick);
+	function addOverlays(rwyclass){
+			if (rwyclass!=="NON-INSTRUMENT" && rwyclass!=="NON-PRECISION APPROACH"){
+			overlays = {
+				"Runway": runway,
+				"Runway Strip": runwaystrip,
+				"Transitional Surface": transitionalsurface,
+				"Inner Horizontal Surface": innerhorizontal,
+				"Conical Surface": conical,
+				"Outer Horizontal Surface": outerhorizontal,
+				"Inner Approach Surface": innerapproach,
+				"Approach Surface": approach,
+				"Inner Transitional Surface": innertransitional,
+				"Balked Landing": balkedlanding,
+				"Takeoff Climb Surface": takeoff
+			};
+			
+		} else {
+			overlays = {
+				"Runway": runway,
+				"Runway Strip": runwaystrip,
+				"Transitional Surface": transitionalsurface,
+				"Inner Horizontal Surface": innerhorizontal,
+				"Conical Surface": conical,
+				"Outer Horizontal Surface": outerhorizontal,
+				"Approach Surface": approach,
+				"Takeoff Climb Surface": takeoff
+				
+			};
+		}
+	}	
+	
+	function removeOverlay(){
+		controller.removeFrom(map);
+	}
+	
+	function clear(){
+	L.layerGroup.clearLayers();
+	}
+	
+	function drawCircle(lat, lon, radius, description){
+		var latlng = L.latLng(lat, lon);
+		L.circle(latlng, radius).setStyle({dashArray: '5,5', fillColor: '#2a8000', color: '#2a8000', fillOpacity: 0}).addTo(map);
+	}
+	
+	var OLS;
+	function drawOLS(ihsCoords, conicalCoords, approach1Coords, approach2Coords, approach3Coords, balkedlandingCoords, innerapproachCoords, innertransitional1Coords, innertransitional2Coords, innertransitional3Coords, innertransitional4Coords, runwaystripCoords, takeoffCoords, transitional1Coords, transitional2Coords, transitional3Coords, transitional4Coords)
+	{
+	
+	var Array_ihsCoords = ihsCoords;
+	var Array_conicalCoords = conicalCoords;
+	var Array_approach1Coords = approach1Coords;
+	var Array_approach2Coords = approach2Coords;
+	var Array_approach3Coords = approach3Coords;
+	var Array_balkedlandingCoords = balkedlandingCoords;
+	var Array_innerapproachCoords = innerapproachCoords;
+	var Array_innertransitional1Coords = innertransitional1Coords;
+	var Array_innertransitional2Coords = innertransitional2Coords;
+	var Array_innertransitional3Coords = innertransitional3Coords;
+	var Array_innertransitional4Coords = innertransitional4Coords;
+	var Array_runwaystripCoords = runwaystripCoords;
+	var Array_takeoffCoords = takeoffCoords;
+	var Array_transitional1Coords = transitional1Coords;
+	var Array_transitional2Coords = transitional2Coords;
+	var Array_transitional3Coords = transitional3Coords;
+	var Array_transitional4Coords = transitional4Coords;
 
+	OLS = L.polygon([Array_ihsCoords]).setStyle({fillOpacity: 0.3, fillColor: '#ffcc66', color: '#ff6600', weight: 1}).addTo(map);//.bindTooltip("INNER HORIZONTAL SURFACE");
+	OLS = L.polygon([[Array_conicalCoords],[Array_ihsCoords]]).setStyle({fillOpacity: 0.3, fillColor: '#ffff66', color: '#ff6600', weight: 2}).addTo(map);//.bindTooltip("CONICAL SURFACE");
+	OLS = L.polygon([[Array_transitional1Coords],[Array_transitional2Coords],[Array_transitional3Coords],[Array_transitional4Coords]]).setStyle({fillOpacity: 0.3, fillColor: '#6600cc', color: '#6600cc', weight: 1}).addTo(map);//.bindTooltip("TRANSITIONAL SURFACE");
+	OLS = L.polygon([Array_takeoffCoords]).setStyle({fillOpacity: 0.3, fillColor: '#0099ff', color: '#0099ff', weight: 2}).addTo(map);//.bindTooltip("TAKE-OFF CLIMB");
+	OLS = L.polygon([[Array_approach1Coords],[Array_approach2Coords],[Array_approach3Coords]]).setStyle({fillOpacity: 0.3, fillColor: '#ff0000', color: '#ff0000', weight: 2}).addTo(map);//.bindTooltip("APPROACH SURFACE");
+	//OLS = L.polygon([Array_approach3Coords]).setStyle({fillOpacity: 0.3, fillColor: '#cc33ff', color: '#cc33ff', weight: 5}).addTo(map);//.bindTooltip("BALKED LANDING");
+	//OLS = L.polygon([Array_approach2Coords]).setStyle({fillOpacity: 0.3, fillColor: '#ff6600', color: '#737373', weight: 10}).addTo(map);//.bindTooltip("BALKED LANDING");
+	//OLS = L.polygon([Array_approach1Coords]).setStyle({fillOpacity: 0.3, fillColor: '#66ff33', color: '#66ff33', weight: 1}).addTo(map);//.bindTooltip("BALKED LANDING");
+	
+	OLS = L.polygon([Array_runwaystripCoords]).setStyle({fillOpacity: 0.6, fillColor: '#ffffff', color: '#737373', weight: 2}).addTo(map);//.bindTooltip("RUNWAY STRIP");
+	OLS = L.polygon([Array_balkedlandingCoords]).setStyle({fillOpacity: 0.3, fillColor: '#ff6600', color: '#737373', weight: 2}).addTo(map);//.bindTooltip("BALKED LANDING");
+	OLS = L.polygon([Array_innerapproachCoords]).setStyle({fillOpacity: 0.3, fillColor: '#ff6600', color: '#737373', weight: 2}).addTo(map);//.bindTooltip("INNER APPROACH");
+	OLS = L.polygon([[Array_innertransitional1Coords],[Array_innertransitional2Coords],[Array_innertransitional3Coords],[Array_innertransitional4Coords]]).setStyle({fillOpacity: 0.3, fillColor: '#ff6600', color: '#737373', weight: 2}).addTo(map);//.bindTooltip("INNER TRANSITIONAL");
+	
+	}
+
+	function drawRunway(pxarray, description){
+		//runway = L.polygon([pxarray]).bindPopup(description);
+		//map.addLayer(runway);
+		
+		var rwy = L.polyline([pxarray]).setStyle({color: '#404040', weight: 3}).addTo(map);
+		rwy.id = 'rwyLine';
+		
+	}	
+		
+	function clearMap(surface) {
+		if (surface === 'ols') {       
+			for(i in map._layers) {
+				if(map._layers[i]._path != undefined && map._layers[i].id == 'olspoly') {
+					try {
+						map.removeLayer(map._layers[i]);
+						map.layer.clear();
+					}
+					catch(e) {
+						console.log("problem with " + e + map._layers[i]);
+					}
+				}
+			}
+		}
+		
+		else if (surface === 'obstacles'){
+			markers.clearLayers();
+		}
+		else if (surface === 'runway'){
+			for(i in map._layers) {
+				if(map._layers[i]._path != undefined && map._layers[i].id == 'rwyLine') {
+					try {
+						map.removeLayer(map._layers[i]);
+						map.layer.clear();
+					}
+					catch(e) {
+						console.log("problem with " + e + map._layers[i]);
+					}
+				}
+			}
+		}
+	}
+	
+	function clearAllLayers() {
+		for(i in map._layers) {
+			if(map._layers[i]._path != undefined) {
+				try {
+					map.removeLayer(map._layers[i]);
+					//map.clearMap();
+				}
+				catch(e) {
+					console.log("problem with " + e + map._layers[i]);
+				}
+			}
+		}
+	}
+	
+	function clearAllLayers1() {
+		for (i in map._layers) {
+			if (map._layers[i].options.format !== undefined) {
+				try {
+					map.removeLayer(map._layers[i]);
+				} catch (e) {
+					console.log("problem with " + e + map._layers[i]);
+				}
+			}
+		}
+	}
 </script>
-
-
 
 </body>
 </html>
