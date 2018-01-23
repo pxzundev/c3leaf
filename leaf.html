@@ -25,10 +25,10 @@
 	<script src="https://unpkg.com/leaflet-pip@latest/leaflet-pip.js"></script>
 	
 
-	<link rel="stylesheet" href="basic.ruler-src.css" />
+	<!-- <link rel="stylesheet" href="basic.ruler-src.css" />
 	<script type="text/javascript" src="basic.ruler-src.js"></script>
 	<script src="bing.js"></script>   
-	<script charset="UTF-8" type="text/javascript" src="https://ecn.dev.virtualearth.net/mapcontrol/mapcontrol.ashx?v=7.0&s=1"></script>
+	<script charset="UTF-8" type="text/javascript" src="https://ecn.dev.virtualearth.net/mapcontrol/mapcontrol.ashx?v=7.0&s=1"></script> -->
  
 
 
@@ -75,10 +75,9 @@
 	});
 
 	
-	var Auhi = 'AuhiCJHlGzhg93IqUH_oCpl_-ZUrIE6SPftlyGYUvr9Amx5nzA-WqGcPquyFZl4L';
-	var bingRoad = new L.BingLayer(Auhi, {type: 'Road'});
-	var bingAerial = new L.BingLayer(Auhi, {type: 'Aerial'});
-	var bingAerialWithLabels = new L.BingLayer(Auhi, {type: 'AerialWithLabels'});
+	// var bingRoad = new L.BingLayer(Auhi, {type: 'Road'});
+	// var bingAerial = new L.BingLayer(Auhi, {type: 'Aerial'});
+	// var bingAerialWithLabels = new L.BingLayer(Auhi, {type: 'AerialWithLabels'});
 		
 	var map = L.map('mapid', {
 		center: [14.503125757799154,122.0594220211],
@@ -88,16 +87,16 @@
 	});
 	
 	//MAP MEASURE
-	map.addControl(new L.Control.LinearCore({
-	  unitSystem: 'metric',
-      color: '#000000',
-      type: 'line',
-	  features:['ruler']
-    }));
+// 	map.addControl(new L.Control.LinearCore({
+// 	  unitSystem: 'metric',
+//       color: '#000000',
+//       type: 'line',
+// 	  features:['ruler']
+//     }));
 
 
 	map.addLayer(OSM);
-	map.addControl(new L.Control.Layers({'OSM':OSM, 'OSM Topo':opentopo,'Road':bingRoad,'Aerial':bingAerial,'Hybrid':bingAerialWithLabels}));				   
+	map.addControl(new L.Control.Layers({'OSM':OSM, 'OSM Topo':opentopo}));				   
 				   
 	function changeCursorToCrosshair(){
 		document.getElementById('mapid').style.cursor = 'crosshair'
